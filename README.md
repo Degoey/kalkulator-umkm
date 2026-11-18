@@ -1,0 +1,17 @@
+# Kalkulator Modal UMKM
+
+PWA (Progressive Web App) kalkulator modal jualan untuk UMKM. Bisa di-install di HP seperti aplikasi native.
+
+## Fitur
+- Hitung modal, harga jual, keuntungan, margin
+- Simpan riwayat perhitungan (localStorage)
+- Offline-ready (Service Worker)
+- Installable sebagai PWA (Add to Home Screen)
+- Responsif mobile/desktop
+
+## Akses
+- **Tailnet (HTTPS)**: `https://degofood-2.tail9040f1.ts.net/kalkulator-modal-jualan.html`
+- **Lokal**: `http://localhost:8800/kalkulator-modal-jualan.html`
+
+## Deploy
+File statis `index.html` — taruh di hosting statis mana pun (Netlify, Vercel, Cloudflare Pages, GitHub Pages, nginx).

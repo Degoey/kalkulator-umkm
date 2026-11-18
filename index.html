@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#059669">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Modal Jualan">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Kalkulator Modal Jualan</title>
+<link rel="manifest" id="pwa-manifest">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23059669' width='192' height='192' rx='32'/><text x='96' y='128' font-size='80' text-anchor='middle' fill='white'>🛒</text></svg>">
+<style>
+:root{--bg:#fdfaf6;--card:#ffffff;--green:#059669;--green-dark:#047857;--green-light:#d1fae5;--yellow-light:#fef9c3;--blue-light:#dbeafe;--text:#1f2937;--text-muted:#6b7280;--shadow:0 4px 12px rgba(0,0,0,.08);--radius:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
+body{display:flex;flex-direction:column;min-height:100vh;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+main{flex:1;width:100%;max-width:480px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+header{text-align:center;padding:8px 0 4px}
+h1{font-size:clamp(28px,6vw,36px);font-weight:800;color:var(--green-dark);line-height:1.2}
+.subtitle{font-size:clamp(14px,3vw,16px);color:var(--text-muted);margin-top:4px;font-weight:500}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;transition:transform .15s}
+.card:active{transform:scale(.995)}
+.card-title{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;margin-bottom:16px}
+.card-title .emoji{font-size:24px}
+.card.green{border-top:4px solid var(--green)}
+.card.yellow{border-top:4px solid #f59e0b}
+.card.blue{border-top:4px solid #3b82f6}
+.card.result{border-top:4px solid var(--green-dark);background:var(--green-dark);color:white}
+label{display:block;font-size:16px;font-weight:600;margin-bottom:8px;color:var(--text)}
+.input-wrap{position:relative}
+input[type="text"],input[type="number"]{width:100%;font-size:22px;padding:16px 16px 16px 48px;border:2px solid #e5e7eb;border-radius:12px;background:white;color:var(--text);outline:none;transition:border-color .2s}
+input:focus{border-color:var(--green)}
+.input-prefix{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:20px;font-weight:700;color:var(--text-muted);pointer-events:none}
+.helper{font-size:13px;color:var(--text-muted);margin-top:6px;line-height:1.4}
+.btn{display:block;width:100%;font-size:18px;font-weight:700;padding:16px;border:none;border-radius:12px;cursor:pointer;touch-action:manipulation;transition:opacity .15s,transform .1s}
+.btn:active{transform:scale(.98);opacity:.9}
+.btn-primary{background:var(--green);color:white}
+.btn-secondary{background:#e5e7eb;color:var(--text)}
+.btn-danger{background:#ef4444;color:white}
+.btn-green-dark{background:var(--green-dark);color:white}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-row{display:flex;gap:12px}
+.btn-row .btn{flex:1}
+.install-btn{background:var(--green-dark);color:white;font-size:18px;font-weight:700;padding:16px;border-radius:12px;border:none;width:100%;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:var(--shadow)}
+.install-btn.installed{background:#10b981;cursor:default}
+.install-note{font-size:13px;color:var(--text-muted);text-align:center;margin-top:8px;line-height:1.4}
+.section-gap{height:8px}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.result-item{background:rgba(255,255,255,.15);border-radius:12px;padding:14px;text-align:center}
+.result-label{font-size:13px;opacity:.9;margin-bottom:4px}
+.result-value{font-size:22px;font-weight:800}
+.result-summary{font-size:18px;font-weight:600;line-height:1.5;text-align:center;padding-top:8px;border-top:1px solid rgba(255,255,255,.2);margin-top:4px}
+.saved-list{margin-top:16px}
+.saved-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.saved-item{background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px}
+.saved-main{font-size:16px;font-weight:700;color:var(--text)}
+.saved-detail{font-size:14px;color:var(--text-muted)}
+.saved-actions{display:flex;gap:8px}
+.saved-actions .btn{font-size:14px;padding:10px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:1000;opacity:0;visibility:hidden;transition:.2s}
+.modal-overlay.show{opacity:1;visibility:visible}
+.modal{background:white;border-radius:var(--radius);width:100%;max-width:380px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,.2);transform:translateY(20px);transition:.2s}
+.modal-overlay.show .modal{transform:translateY(0)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #e5e7eb}
+.modal-title{font-size:18px;font-weight:700}
+.modal-close{background:none;border:none;font-size:28px;color:var(--text-muted);cursor:pointer;line-height:1;padding:4px}
+.modal-body{padding:20px}
+.modal-footer{display:flex;gap:12px;padding:16px 20px;border-top:1px solid #e5e7eb}
+.detail-row{display:flex;gap:8px;margin-bottom:8px}
+.detail-row input{flex:1;font-size:16px;padding:12px;border:2px solid #e5e7eb;border-radius:10px}
+.detail-row input:focus{border-color:var(--green);outline:none}
+.hidden{display:none!important}
+@media (display-mode: standalone){header{padding-top:env(safe-area-inset-top,16px)}.install-btn{display:none}}
+@media (max-width: 400px){.result-grid{grid-template-columns:1fr}.result-value{font-size:18px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>Kalkulator Modal Jualan</h1>
+<p class="subtitle">Hitung Modal & Harga Jual - Gampang Banget</p>
+</header>
+
+<button class="install-btn" id="installBtn" aria-label="Pasang aplikasi">📲 Pasang Aplikasi di HP</button>
+<p class="install-note" id="installNote">Biar tidak perlu buka browser terus, bisa dibuka offline dari layar HP.</p>
+
+<div class="card green">
+<div class="card-title"><span class="emoji">🛒</span>1. Habis Berapa Buat Belanja?</div>
+<div class="input-wrap">
+<label for="totalBelanja">Total Uang Belanja Bahan: Rp</label>
+<input type="number" id="totalBelanja" min="0" step="1000" inputmode="numeric" placeholder="200000" aria-label="Total belanja bahan">
+</div>
+<p class="helper">Contoh: singkong + minyak + bumbu totalnya berapa?</p>
+<button class="btn btn-secondary" id="btnTambahRincian" style="margin-top:12px">+ Tambah Rincian Bahan</button>
+<div id="rincianContainer" class="hidden" style="margin-top:12px"></div>
+</div>
+
+<div class="card yellow">
+<div class="card-title"><span class="emoji">💰</span>2. Biaya Lainnya</div>
+<div class="input-wrap">
+<label for="biayaLain">Gas + Plastik + Listrik + Tenaga: Rp</label>
+<input type="number" id="biayaLain" min="0" step="1000" inputmode="numeric" placeholder="50000" aria-label="Biaya lain">
+</div>
+<p class="helper">Kalau tidak ada, isi 0 saja. Tidak ada sewa tempat.</p>
+</div>
+
+<div class="card blue">
+<div class="card-title"><span class="emoji">🏷️</span>3. Jadi Berapa & Mau Untung Berapa?</div>
+<div class="input-wrap">
+<label for="jumlahBungkus">Jadi Berapa Bungkus / Porsi?</label>
+<input type="number" id="jumlahBungkus" min="1" step="1" inputmode="numeric" placeholder="100" aria-label="Jumlah bungkus">
+</div>
+<div class="input-wrap" style="margin-top:16px">
+<label for="untungPerBungkus">Mau Untung Berapa per Bungkus? Rp</label>
+<input type="number" id="untungPerBungkus" min="0" step="500" inputmode="numeric" placeholder="2000" aria-label="Untung per bungkus">
+</div>
+<p class="helper">Untungnya terserah ibu, biasanya Rp 1.000 - Rp 5.000</p>
+</div>
+
+<div class="card result" id="resultCard">
+<div class="result-grid">
+<div class="result-item">
+<div class="result-label">Modal per Bungkus</div>
+<div class="result-value" id="modalPerBungkus">Rp 0</div>
+</div>
+<div class="result-item">
+<div class="result-label">Harga Jual yang Pas</div>
+<div class="result-value" id="hargaJual">Rp 0</div>
+</div>
+</div>
+<div class="result-item" style="grid-column:1/-1">
+<div class="result-label">Kalau Laku Semua, Untung Total</div>
+<div class="result-value" id="untungTotal">Rp 0</div>
+</div>
+<div class="result-summary" id="resultSummary">Isi angka di atas untuk melihat hasil</div>
+</div>
+
+<div class="btn-row">
+<button class="btn btn-primary" id="btnSimpan">Simpan Hitungan Ini</button>
+<button class="btn btn-secondary" id="btnUlang">Ulang dari Awal</button>
+</div>
+
+<div class="saved-list" id="savedList">
+<div class="saved-title">
+<span>Hitungan yang Disimpan</span>
+<span id="savedCount" style="font-size:13px;color:var(--text-muted);font-weight:500"></span>
+</div>
+<div id="savedItems"></div>
+</div>
+</main>
+
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+<div class="modal">
+<div class="modal-header">
+<h2 class="modal-title" id="modalTitle">Tambah Rincian Bahan</h2>
+<button class="modal-close" id="modalClose" aria-label="Tutup">×</button>
+</div>
+<div class="modal-body" id="modalBody"></div>
+<div class="modal-footer">
+<button class="btn btn-secondary" id="modalCancel" style="flex:1">Batal</button>
+<button class="btn btn-primary" id="modalSave" style="flex:1">Simpan</button>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="guideOverlay" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+<div class="modal">
+<div class="modal-header">
+<h2 class="modal-title" id="guideTitle">Cara Pasang di HP</h2>
+<button class="modal-close" id="guideClose" aria-label="Tutup">×</button>
+</div>
+<div class="modal-body" style="padding:20px 20px 12px" id="guideBody"></div>
+<div class="modal-footer">
+<button class="btn btn-primary" id="guideOk" style="flex:1">Tutup</button>
+</div>
+</div>
+</div>
+
+<script>
+// ===== FORMAT RUPIAH =====
+const fmt = new Intl.NumberFormat('id-ID', {style:'currency', currency:'IDR', minimumFractionDigits:0, maximumFractionDigits:0});
+const fmtNum = (n) => fmt.format(n).replace('Rp','Rp ').trim();
+
+// ===== STATE =====
+let state = {
+  nama: 'Keripik Singkong',
+  totalBelanja: 200000,
+  biayaLain: 50000,
+  jumlahBungkus: 100,
+  untungPerBungkus: 2000,
+  rincian: []
+};
+let saved = [];
+let deferredPrompt = null;
+let isInstalled = false;
+let isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+let isAndroid = /Android/.test(navigator.userAgent);
+
+// ===== DOM =====
+const $ = (id) => document.getElementById(id);
+const inputs = ['totalBelanja','biayaLain','jumlahBungkus','untungPerBungkus'].reduce((o,k)=>{o[k]=$(k);return o;},{});
+const resultEls = {
+  modalPerBungkus: $('modalPerBungkus'),
+  hargaJual: $('hargaJual'),
+  untungTotal: $('untungTotal'),
+  resultSummary: $('resultSummary')
+};
+const btnInstall = $('installBtn');
+const installNote = $('installNote');
+const modalOverlay = $('modalOverlay');
+const modalBody = $('modalBody');
+const guideOverlay = $('guideOverlay');
+const guideBody = $('guideBody');
+
+// ===== LOCALSTORAGE =====
+function load() {
+  try {
+    const s = localStorage.getItem('modalJualan_state');
+    if (s) state = {...state, ...JSON.parse(s)};
+    const sv = localStorage.getItem('modalJualan_saved');
+    if (sv) saved = JSON.parse(sv);
+  } catch(e) {}
+  renderInputs();
+  renderSaved();
+  calc();
+}
+function saveState() {
+  localStorage.setItem('modalJualan_state', JSON.stringify(state));
+}
+function saveSaved() {
+  localStorage.setItem('modalJualan_saved', JSON.stringify(saved));
+}
+
+// ===== RENDER INPUTS =====
+function renderInputs() {
+  inputs.totalBelanja.value = state.totalBelanja;
+  inputs.biayaLain.value = state.biayaLain;
+  inputs.jumlahBungkus.value = state.jumlahBungkus;
+  inputs.untungPerBungkus.value = state.untungPerBungkus;
+  renderRincian();
+}
+function renderRincian() {
+  const c = $('rincianContainer');
+  if (state.rincian.length === 0) { c.classList.add('hidden'); return; }
+  c.classList.remove('hidden');
+  c.innerHTML = state.rincian.map((r,i)=>`<div style="display:flex;gap:8px;margin-bottom:8px"><input type="text" value="${r.nama}" placeholder="Nama bahan" style="flex:1;padding:12px;border:2px solid #e5e7eb;border-radius:10px;font-size:16px" readonly><input type="number" value="${r.harga}" placeholder="0" style="width:100px;padding:12px;border:2px solid #e5e7eb;border-radius:10px;font-size:16px" readonly><button class="btn btn-danger" style="padding:10px 12px;font-size:14px" onclick="hapusRincian(${i})">Hapus</button></div>`).join('');
+}
+window.hapusRincian = (i) => { state.rincian.splice(i,1); saveState(); renderRincian(); };
+
+// ===== CALC =====
+function calc() {
+  const belanja = Number(inputs.totalBelanja.value) || 0;
+  const lain = Number(inputs.biayaLain.value) || 0;
+  const jumlah = Number(inputs.jumlahBungkus.value) || 0;
+  const untung = Number(inputs.untungPerBungkus.value) || 0;
+
+  state.totalBelanja = belanja; state.biayaLain = lain; state.jumlahBungkus = jumlah; state.untungPerBungkus = untung;
+  saveState();
+
+  if (jumlah <= 0) {
+    resultEls.modalPerBungkus.textContent = 'Rp 0';
+    resultEls.hargaJual.textContent = 'Rp 0';
+    resultEls.untungTotal.textContent = 'Rp 0';
+    resultEls.resultSummary.textContent = 'Isi jumlah bungkus minimal 1';
+    return;
+  }
+  const modalPer = Math.round((belanja + lain) / jumlah);
+  const hargaJual = modalPer + untung;
+  const untungTotal = untung * jumlah;
+
+  resultEls.modalPerBungkus.textContent = fmtNum(modalPer);
+  resultEls.hargaJual.textContent = fmtNum(hargaJual);
+  resultEls.untungTotal.textContent = fmtNum(untungTotal);
+  resultEls.resultSummary.textContent = `Jadi kalau jual ${fmtNum(hargaJual)}, ibu untung ${fmtNum(untung)} per bungkus.`;
+}
+
+// ===== SAVED LIST =====
+function renderSaved() {
+  const countEl = $('savedCount');
+  const itemsEl = $('savedItems');
+  countEl.textContent = saved.length ? `(${saved.length})` : '';
+  if (saved.length === 0) { itemsEl.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:16px">Belum ada hitungan tersimpan</p>'; return; }
+  itemsEl.innerHTML = saved.map((s,i)=>`<div class="saved-item"><div class="saved-main">${s.nama}</div><div class="saved-detail">Modal ${fmtNum(s.modalPerBungkus)} • Jual ${fmtNum(s.hargaJual)} • Untung total ${fmtNum(s.untungTotal)}</div><div class="saved-actions"><button class="btn btn-primary" onclick="bukaHitungan(${i})">Buka Lagi</button><button class="btn btn-danger" onclick="hapusHitungan(${i})">Hapus</button></div></div>`).join('');
+}
+window.bukaHitungan = (i) => {
+  const s = saved[i];
+  state = {...state, ...s};
+  renderInputs(); calc();
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+window.hapusHitungan = (i) => {
+  if (confirm('Hapus hitungan ini?')) { saved.splice(i,1); saveSaved(); renderSaved(); }
+};
+
+// ===== EVENTS =====
+inputs.totalBelanja.addEventListener('input', calc);
+inputs.biayaLain.addEventListener('input', calc);
+inputs.jumlahBungkus.addEventListener('input', calc);
+inputs.untungPerBungkus.addEventListener('input', calc);
+
+$('btnSimpan').addEventListener('click', () => {
+  const nama = prompt('Nama jualan:', state.nama || 'Jualan Baru');
+  if (!nama) return;
+  const belanja = Number(inputs.totalBelanja.value) || 0;
+  const lain = Number(inputs.biayaLain.value) || 0;
+  const jumlah = Number(inputs.jumlahBungkus.value) || 0;
+  const untung = Number(inputs.untungPerBungkus.value) || 0;
+  if (jumlah <= 0) { alert('Jumlah bungkus minimal 1'); return; }
+  const modalPer = Math.round((belanja + lain) / jumlah);
+  const hargaJual = modalPer + untung;
+  const untungTotal = untung * jumlah;
+  saved.unshift({nama, totalBelanja:belanja, biayaLain:lain, jumlahBungkus:jumlah, untungPerBungkus:untung, modalPerBungkus:modalPer, hargaJual:hargaJual, untungTotal:untungTotal, tanggal:Date.now()});
+  if (saved.length > 20) saved.pop();
+  saveSaved(); renderSaved();
+  alert('Tersimpan!');
+});
+
+$('btnUlang').addEventListener('click', () => {
+  if (confirm('Ulang dari awal? Semua input akan dikosongkan.')) {
+    state = {nama:'', totalBelanja:0, biayaLain:0, jumlahBungkus:0, untungPerBungkus:0, rincian:[]};
+    saveState(); renderInputs(); calc();
+  }
+});
+
+$('btnTambahRincian').addEventListener('click', () => openRincianModal());
+$('modalClose').addEventListener('click', closeModal);
+$('modalCancel').addEventListener('click', closeModal);
+$('modalSave').addEventListener('click', saveRincian);
+modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
+
+function openRincianModal() {
+  modalBody.innerHTML = `
+    <p style="font-size:14px;color:var(--text-muted);margin-bottom:16px">Masukkan nama bahan dan harganya. Tidak wajib diisi semua.</p>
+    <div id="rincianRows">${state.rincian.map((r,i)=>`<div class="detail-row"><input type="text" value="${r.nama}" placeholder="Nama bahan (contoh: Singkong)" data-idx="${i}" data-field="nama"><input type="number" value="${r.harga}" placeholder="Harga" min="0" step="1000" inputmode="numeric" data-idx="${i}" data-field="harga"><button class="btn btn-danger" style="padding:10px 12px" onclick="hapusRincianRow(${i})">Hapus</button></div>`).join('')}</div>
+    <button class="btn btn-secondary" style="margin-top:12px;width:100%" onclick="tambahRincianRow()">+ Tambah Baris</button>
+  `;
+  modalOverlay.classList.add('show');
+}
+window.hapusRincianRow = (i) => { state.rincian.splice(i,1); openRincianModal(); };
+window.tambahRincianRow = () => { state.rincian.push({nama:'',harga:0}); openRincianModal(); };
+function closeModal() { modalOverlay.classList.remove('show'); }
+function saveRincian() {
+  const rows = modalBody.querySelectorAll('#rincianRows .detail-row');
+  state.rincian = [];
+  rows.forEach(r => {
+    const nama = r.querySelector('[data-field="nama"]').value.trim();
+    const harga = Number(r.querySelector('[data-field="harga"]').value) || 0;
+    if (nama || harga > 0) state.rincian.push({nama, harga});
+  });
+  saveState(); renderRincian(); calc(); closeModal();
+}
+
+$('guideClose').addEventListener('click', () => guideOverlay.classList.remove('show'));
+$('guideOk').addEventListener('click', () => guideOverlay.classList.remove('show'));
+guideOverlay.addEventListener('click', (e) => { if (e.target === guideOverlay) guideOverlay.classList.remove('show'); });
+
+// ===== PWA: MANIFEST via Blob =====
+function createManifest() {
+  const manifest = {
+    name: 'Kalkulator Modal Jualan',
+    short_name: 'Modal Jualan',
+    description: 'Hitung modal & harga jual buat UMKM rumahan',
+    start_url: '.',
+    display: 'standalone',
+    background_color: '#ffffff',
+    theme_color: '#059669',
+    orientation: 'portrait-primary',
+    icons: [
+      {src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect fill="%23059669" width="192" height="192" rx="32"/><text x="96" y="128" font-size="80" text-anchor="middle" fill="white">🛒</text></svg>', sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable'},
+      {src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect fill="%23059669" width="512" height="512" rx="84"/><text x="256" y="340" font-size="220" text-anchor="middle" fill="white">🛒</text></svg>', sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable'}
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.getElementById('pwa-manifest');
+  if (link) link.href = url;
+}
+createManifest();
+
+// ===== PWA: SERVICE WORKER via Blob =====
+const swCode = `
+const CACHE = 'modal-jualan-v1';
+const ASSETS = ['.', 'index.html'];
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+});
+self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
+  if (url.origin !== location.origin) return;
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      if (cached) return cached;
+      return fetch(e.request).then(resp => {
+        if (resp.ok) {
+          const copy = resp.clone();
+          caches.open(CACHE).then(c => c.put(e.request, copy));
+        }
+        return resp;
+      }).catch(() => cached);
+    })
+  );
+});
+`;
+function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  const blob = new Blob([swCode], {type: 'application/javascript'});
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).then(reg => {
+    console.log('SW registered', reg.scope);
+    reg.addEventListener('updatefound', () => {
+      const newSW = reg.installing;
+      newSW.addEventListener('statechange', () => {
+        if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+          console.log('Update available');
+        }
+      });
+    });
+  }).catch(err => console.log('SW register failed', err));
+}
+registerSW();
+
+// ===== INSTALL PROMPT =====
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  updateInstallBtn(false);
+});
+
+window.addEventListener('appinstalled', () => {
+  isInstalled = true;
+  deferredPrompt = null;
+  updateInstallBtn(true);
+});
+
+function updateInstallBtn(installed) {
+  if (installed) {
+    btnInstall.classList.add('installed');
+    btnInstall.innerHTML = '✅ Aplikasi Sudah Terpasang';
+    btnInstall.disabled = true;
+    installNote.textContent = 'Aplikasi sudah terpasang di layar HP. Bisa dibuka tanpa internet.';
+  } else {
+    btnInstall.classList.remove('installed');
+    btnInstall.innerHTML = '📲 Pasang Aplikasi di HP';
+    btnInstall.disabled = false;
+    installNote.textContent = 'Biar tidak perlu buka browser terus, bisa dibuka offline dari layar HP.';
+  }
+}
+
+btnInstall.addEventListener('click', async () => {
+  if (isInstalled) return;
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const {outcome} = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      isInstalled = true;
+      deferredPrompt = null;
+      updateInstallBtn(true);
+    }
+  } else {
+    showGuide();
+  }
+});
+
+function showGuide() {
+  let html = '';
+  if (isAndroid) {
+    html = `
+      <p style="font-size:16px;line-height:1.7;margin-bottom:16px">Di Android Chrome:</p>
+      <ol style="font-size:16px;line-height:2;padding-left:20px">
+        <li>Klik titik 3 di pojok kanan atas</li>
+        <li>Pilih <strong>Tambahkan ke Layar Utama</strong> atau <strong>Install Aplikasi</strong></li>
+        <li>Klik <strong>Pasang</strong></li>
+      </ol>
+    `;
+  } else if (isIOS) {
+    html = `
+      <p style="font-size:16px;line-height:1.7;margin-bottom:16px">Di iPhone Safari:</p>
+      <ol style="font-size:16px;line-height:2;padding-left:20px">
+        <li>Klik tombol <strong>Bagikan</strong> (kotak + panah ke atas) di bawah</li>
+        <li>Geser ke bawah, pilih <strong>Tambahkan ke Layar Utama</strong></li>
+        <li>Klik <strong>Tambah</strong> di pojok kanan atas</li>
+      </ol>
+    `;
+  } else {
+    html = '<p style="font-size:16px;line-height:1.7">Browser ini tidak mendukung pemasangan otomatis. Coba buka di Chrome (Android) atau Safari (iPhone).</p>';
+  }
+  guideBody.innerHTML = html;
+  guideOverlay.classList.add('show');
+}
+
+// ===== INIT =====
+load();
+setTimeout(() => {
+  if (!isInstalled && !deferredPrompt && ('serviceWorker' in navigator)) {
+    navigator.serviceWorker.ready.then(() => {
+      if (!isInstalled && !deferredPrompt) {
+        updateInstallBtn(false);
+      }
+    });
+  }
+}, 1000);
+</script>
+</body>
+</html>
